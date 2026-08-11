@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 import crypto from 'crypto';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -15,10 +15,7 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // To prevent email enumeration, we always return a success message
-    // even if the user is not found.
     if (user) {
-      // Generate a secure random token
       const token = crypto.randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
@@ -30,14 +27,13 @@ export async function POST(request: Request) {
         },
       });
 
-      // Construct reset URL (using localhost for dev as agreed)
       const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
 
-      // Send email via Resend
+      const apiKey = process.env.RESEND_API_KEY || 're_mock_key_for_build';
+      const resend = new Resend(apiKey);
+
       await resend.emails.send({
         from: 'onboarding@resend.dev',
-        // DEV NOTE: Resend free tier only sends to verified email.
-        // Replace with email once a verified domain is added.
         to: 'furiousnivas@gmail.com',
         subject: 'Reset your Nexus AML Portal password',
         html: `
