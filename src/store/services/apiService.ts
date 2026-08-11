@@ -13,7 +13,7 @@ export const apiService = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Announcements', 'User', 'Cases'],
+  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts'],
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -71,6 +71,32 @@ export const apiService = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Cases', id }, 'Cases'],
     }),
+    getAlerts: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, severity?: string, type?: string, status?: string, search?: string, unresolvedOnly?: boolean }>({
+      query: (params) => {
+        let url = '/alerts?';
+        if (params?.page) url += `page=${params.page}&`;
+        if (params?.limit) url += `limit=${params.limit}&`;
+        if (params?.severity) url += `severity=${encodeURIComponent(params.severity)}&`;
+        if (params?.type) url += `type=${encodeURIComponent(params.type)}&`;
+        if (params?.status) url += `status=${encodeURIComponent(params.status)}&`;
+        if (params?.search) url += `search=${encodeURIComponent(params.search)}&`;
+        if (params?.unresolvedOnly) url += `unresolvedOnly=true`;
+        return url;
+      },
+      providesTags: ['Alerts'],
+    }),
+    getAlertById: builder.query<any, string>({
+      query: (id) => `/alerts/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Alerts', id }],
+    }),
+    createAlert: builder.mutation<any, any>({
+      query: (data) => ({ url: '/alerts', method: 'POST', body: data }),
+      invalidatesTags: ['Alerts'],
+    }),
+    updateAlertStatus: builder.mutation<any, { id: string; data: any }>({
+      query: ({ id, data }) => ({ url: `/alerts/${id}`, method: 'PATCH', body: data }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Alerts', id }, 'Alerts'],
+    }),
     getAnnouncements: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, category?: string, search?: string }>({
       query: (params) => {
         let url = '/announcements?';
@@ -118,6 +144,10 @@ export const {
   useGetCaseByIdQuery,
   useCreateCaseMutation,
   useUpdateCaseMutation,
+  useGetAlertsQuery,
+  useGetAlertByIdQuery,
+  useCreateAlertMutation,
+  useUpdateAlertStatusMutation,
   useGetAnnouncementsQuery, 
   useGetAnnouncementByIdQuery,
   useCreateAnnouncementMutation,
