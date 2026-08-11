@@ -62,7 +62,9 @@ export default function AnnouncementCard({ id, title, category, message, author,
             </div>
             <span style={{ fontSize: '12px', color: '#374151', fontWeight: 500 }}>{author.name}</span>
           </div>
-          <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{timeStr}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{timeStr}</span>
+          </div>
         </div>
       </div>
     </Link>

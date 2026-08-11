@@ -1,20 +1,10 @@
 {
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/(auth)/register/role/page": "app/(auth)/register/role/page.js",
-  "/(auth)/register/page": "app/(auth)/register/page.js",
-  "/api/auth/logout/route": "app/api/auth/logout/route.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/users/route": "app/api/users/route.js",
-  "/api/announcements/route": "app/api/announcements/route.js",
-  "/api/cases/route": "app/api/cases/route.js",
-  "/api/announcements/[id]/route": "app/api/announcements/[id]/route.js",
-  "/api/users/me/route": "app/api/users/me/route.js",
+  "/api/notifications/route": "app/api/notifications/route.js",
   "/api/alerts/route": "app/api/alerts/route.js",
-  "/api/reports/route": "app/api/reports/route.js",
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/cases/page": "app/(dashboard)/cases/page.js",
+  "/api/users/me/route": "app/api/users/me/route.js",
+  "/(dashboard)/deployments/page": "app/(dashboard)/deployments/page.js",
   "/(dashboard)/announcements/page": "app/(dashboard)/announcements/page.js",
-  "/(dashboard)/announcements/[id]/page": "app/(dashboard)/announcements/[id]/page.js",
   "/(dashboard)/alerts/page": "app/(dashboard)/alerts/page.js",
-  "/(dashboard)/reports/page": "app/(dashboard)/reports/page.js"
+  "/(dashboard)/announcements/[id]/page": "app/(dashboard)/announcements/[id]/page.js",
+  "/(dashboard)/settings/page": "app/(dashboard)/settings/page.js"
 }

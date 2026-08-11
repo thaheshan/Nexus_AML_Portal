@@ -13,7 +13,7 @@ export const apiService = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts', 'Reports', 'Profile'],
+  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts', 'Reports', 'Profile', 'Deployments'],
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -85,6 +85,10 @@ export const apiService = createApi({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Cases', id }, 'Cases'],
     }),
+    deleteCase: builder.mutation<any, string>({
+      query: (id) => ({ url: `/cases/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Cases'],
+    }),
     getAlerts: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, severity?: string, type?: string, status?: string, search?: string, unresolvedOnly?: boolean }>({
       query: (params) => {
         let url = '/alerts?';
@@ -111,6 +115,10 @@ export const apiService = createApi({
       query: ({ id, data }) => ({ url: `/alerts/${id}`, method: 'PATCH', body: data }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Alerts', id }, 'Alerts'],
     }),
+    deleteAlert: builder.mutation<any, string>({
+      query: (id) => ({ url: `/alerts/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Alerts'],
+    }),
     getReports: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, type?: string, dateRange?: string, search?: string }>({
       query: (params) => {
         let url = '/reports?';
@@ -130,6 +138,10 @@ export const apiService = createApi({
     createReport: builder.mutation<any, any>({
       query: (data) => ({ url: '/reports', method: 'POST', body: data }),
       invalidatesTags: ['Reports'],
+    }),
+    updateReport: builder.mutation<any, { id: string; data: any }>({
+      query: ({ id, data }) => ({ url: `/reports/${id}`, method: 'PUT', body: data }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Reports', id }, 'Reports'],
     }),
     deleteReport: builder.mutation<any, string>({
       query: (id) => ({ url: `/reports/${id}`, method: 'DELETE' }),
@@ -187,6 +199,23 @@ export const apiService = createApi({
       }),
       invalidatesTags: ['Announcements'],
     }),
+    getDeployments: builder.query<any, { search?: string; env?: string }>({      
+      query: (params) => {
+        let url = '/deployments?';
+        if (params?.search) url += `search=${encodeURIComponent(params.search)}&`;
+        if (params?.env) url += `env=${encodeURIComponent(params.env)}`;
+        return url;
+      },
+      providesTags: ['Deployments'],
+    }),
+    addDeployment: builder.mutation<any, any>({
+      query: (data) => ({ url: '/deployments', method: 'POST', body: data }),
+      invalidatesTags: ['Deployments'],
+    }),
+    updateDeploymentStatus: builder.mutation<any, { id: string; status: string }>({
+      query: (data) => ({ url: '/deployments', method: 'PATCH', body: data }),
+      invalidatesTags: ['Deployments'],
+    }),
   }),
 });
 
@@ -196,13 +225,16 @@ export const {
   useGetCaseByIdQuery,
   useCreateCaseMutation,
   useUpdateCaseMutation,
+  useDeleteCaseMutation,
   useGetAlertsQuery,
   useGetAlertByIdQuery,
   useCreateAlertMutation,
   useUpdateAlertStatusMutation,
+  useDeleteAlertMutation,
   useGetReportsQuery,
   useGetReportByIdQuery,
   useCreateReportMutation,
+  useUpdateReportMutation,
   useDeleteReportMutation,
   useGetMeQuery,
   useUpdateMeMutation,
@@ -212,6 +244,9 @@ export const {
   useCreateAnnouncementMutation,
   useUpdateAnnouncementMutation,
   useDeleteAnnouncementMutation,
+  useGetDeploymentsQuery,
+  useAddDeploymentMutation,
+  useUpdateDeploymentStatusMutation,
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,
