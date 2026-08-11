@@ -2,21 +2,22 @@
 
 import React, { useState, useRef } from 'react';
 
-const newCasesData = [105, 120, 95, 130, 145, 110, 160, 155, 140, 175, 190, 195];
-const resolvedData  = [100, 115, 110, 120, 130, 125, 140, 150, 145, 160, 165, 170];
-const xLabels       = ['Oct 1', 'Oct 5', 'Oct 10', 'Oct 15', 'Oct 20', 'Oct 25'];
+interface CaseVolumeChartProps {
+  newCasesData: number[];
+  resolvedData: number[];
+  xLabels: string[];
+}
 
 const W   = 500;
 const H   = 160;
 const PAD = { top: 16, right: 16, bottom: 24, left: 32 };
-const MIN = 80;
-const MAX = 210;
 
-function calcPoints(data: number[]) {
-  const xStep = (W - PAD.left - PAD.right) / (data.length - 1);
+function calcPoints(data: number[], min: number, max: number) {
+  const xStep = (W - PAD.left - PAD.right) / (Math.max(1, data.length - 1));
+  const range = Math.max(1, max - min);
   return data.map((v, i) => ({
     x: PAD.left + i * xStep,
-    y: PAD.top + ((MAX - v) / (MAX - MIN)) * (H - PAD.top - PAD.bottom),
+    y: PAD.top + ((max - v) / range) * (H - PAD.top - PAD.bottom),
     value: v,
   }));
 }
@@ -36,14 +37,22 @@ function toFillPath(pts: { x: number; y: number }[]) {
   return `${line} L ${pts[pts.length - 1].x} ${bottom} L ${pts[0].x} ${bottom} Z`;
 }
 
-const newPts = calcPoints(newCasesData);
-const resPts = calcPoints(resolvedData);
-const newPath  = toSmoothPath(newPts);
-const resPath  = toSmoothPath(resPts);
-const newFill  = toFillPath(newPts);
-const resFill  = toFillPath(resPts);
+export default function CaseVolumeChart({ newCasesData = [], resolvedData = [], xLabels = [] }: CaseVolumeChartProps) {
+  // Ensure we have data to draw
+  const safeNew = newCasesData.length ? newCasesData : Array(12).fill(0);
+  const safeRes = resolvedData.length ? resolvedData : Array(12).fill(0);
+  const safeLabels = xLabels.length ? xLabels : [''];
 
-export default function CaseVolumeChart() {
+  const allVals = [...safeNew, ...safeRes];
+  const maxVal = Math.max(...allVals, 10); // Ensure some headroom
+  const minVal = 0; // Always anchor at 0 for volume
+
+  const newPts = calcPoints(safeNew, minVal, maxVal);
+  const resPts = calcPoints(safeRes, minVal, maxVal);
+  const newPath  = toSmoothPath(newPts);
+  const resPath  = toSmoothPath(resPts);
+  const newFill  = toFillPath(newPts);
+  const resFill  = toFillPath(resPts);
   const svgRef  = useRef<SVGSVGElement>(null);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
@@ -115,8 +124,8 @@ export default function CaseVolumeChart() {
         </defs>
 
         {/* Grid lines */}
-        {[100, 130, 160, 190].map(v => {
-          const y = PAD.top + ((MAX - v) / (MAX - MIN)) * (H - PAD.top - PAD.bottom);
+        {[minVal, Math.floor(maxVal/3), Math.floor((maxVal*2)/3), maxVal].map(v => {
+          const y = PAD.top + ((maxVal - v) / Math.max(1, maxVal - minVal)) * (H - PAD.top - PAD.bottom);
           return (
             <g key={v}>
               <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y} stroke="#F3F4F6" strokeWidth="1"/>
@@ -126,8 +135,8 @@ export default function CaseVolumeChart() {
         })}
 
         {/* X Labels */}
-        {xLabels.map((l, i) => {
-          const x = PAD.left + i * ((W - PAD.left - PAD.right) / (xLabels.length - 1));
+        {safeLabels.map((l, i) => {
+          const x = PAD.left + i * ((W - PAD.left - PAD.right) / Math.max(1, safeLabels.length - 1));
           return <text key={l} x={x} y={H - 4} fontSize="9" fill="#9CA3AF" textAnchor="middle">{l}</text>;
         })}
 
@@ -162,14 +171,14 @@ export default function CaseVolumeChart() {
               <rect x="10" y="12" width="8" height="8" rx="2" fill="#3B82F6"/>
               <text x="24" y="20" fontSize="10" fill="#CBD5E1" fontFamily="Inter, sans-serif">New Cases</text>
               <text x="95" y="20" fontSize="11" fontWeight="700" fill="#FFFFFF" textAnchor="end" fontFamily="Inter, sans-serif">
-                {newCasesData[hoverIdx]}
+                {safeNew[hoverIdx]}
               </text>
 
               {/* Resolved row */}
               <rect x="10" y="30" width="8" height="8" rx="2" fill="#94A3B8"/>
               <text x="24" y="38" fontSize="10" fill="#CBD5E1" fontFamily="Inter, sans-serif">Resolved</text>
               <text x="95" y="38" fontSize="11" fontWeight="700" fill="#FFFFFF" textAnchor="end" fontFamily="Inter, sans-serif">
-                {resolvedData[hoverIdx]}
+                {safeRes[hoverIdx]}
               </text>
             </g>
           </>

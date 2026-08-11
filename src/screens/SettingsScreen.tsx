@@ -28,22 +28,38 @@ export default function SettingsScreen() {
       <div style={{ display: 'flex', gap: '48px', alignItems: 'flex-start' }}>
         {/* Sidebar Nav */}
         <div style={{ width: '220px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                width: '100%', textAlign: 'left', padding: '10px 16px',
-                borderRadius: '8px', border: 'none', cursor: 'pointer',
-                fontSize: '13px', fontWeight: 500,
-                backgroundColor: activeTab === tab ? '#F1F5F9' : 'transparent',
-                color: activeTab === tab ? '#0B1F3A' : '#64748B',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {tab}
-            </button>
-          ))}
+          {TABS.map(tab => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  width: '100%', textAlign: 'left', padding: '10px 16px',
+                  borderRadius: '8px', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: isActive ? 600 : 500,
+                  backgroundColor: isActive ? '#EFF4FF' : 'transparent',
+                  color: isActive ? '#0B1F3A' : '#64748B',
+                  borderLeft: isActive ? '3px solid #0B1F3A' : '3px solid transparent',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = '#F8FAFC';
+                    e.currentTarget.style.color = '#0B1F3A';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#64748B';
+                  }
+                }}
+              >
+                {tab}
+              </button>
+            );
+          })}
         </div>
 
         {/* Content Area */}

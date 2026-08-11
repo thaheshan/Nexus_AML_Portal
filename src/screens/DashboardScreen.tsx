@@ -5,8 +5,9 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/store/slices/authSlice';
 import { RootState } from '@/store/store';
-import { useLogoutMutation } from '@/store/services/apiService';
+import { useLogoutMutation, useGetMeQuery } from '@/store/services/apiService';
 import Link from 'next/link';
+import AuthRehydrator from '@/components/AuthRehydrator';
 
 // ─── SVG Nav Icons ─────────────────────────────────────────────────────────
 const Icons = {
@@ -105,6 +106,10 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
   const role = user?.role || 'VIEWER';
 
   const [logoutApi] = useLogoutMutation();
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+
+  // Fetch full profile so header avatar reflects uploaded picture
+  const { data: profile } = useGetMeQuery();
 
   const handleLogout = async () => {
     try { await logoutApi().unwrap(); } catch {}
@@ -116,6 +121,7 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F5F7FA', fontFamily: 'Inter, sans-serif' }}>
+      <AuthRehydrator />
 
       {/* ── Sidebar ── */}
       <aside style={{
@@ -188,7 +194,7 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
               <div style={{ fontSize: '10px', color: '#4D6A8A', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{role}</div>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutModal(true)}
               title="Logout"
               style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#4D6A8A', padding: '4px', flexShrink: 0, transition: 'color 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.color = '#FFFFFF'}
@@ -232,8 +238,12 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
               <Icons.Bell />
               <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', backgroundColor: '#EF4444', borderRadius: '50%', border: '2px solid #FFFFFF' }}/>
             </button>
-            <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#1E3A5F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#FFFFFF', cursor: 'pointer' }}>
-              {getInitials(user?.name || 'U')}
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#1E3A5F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#FFFFFF', cursor: 'pointer', overflow: 'hidden', flexShrink: 0 }}>
+              {profile?.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                getInitials(user?.name || 'U')
+              )}
             </div>
           </div>
         </header>
@@ -243,6 +253,92 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      {/* ── Logout Confirmation Modal ── */}
+      {showLogoutModal && (
+        <div
+          onClick={() => setShowLogoutModal(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(2px)',
+            animation: 'fadeIn 0.15s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '16px',
+              padding: '36px 32px',
+              width: '100%',
+              maxWidth: '360px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              textAlign: 'center',
+              animation: 'slideUp 0.2s ease',
+            }}
+          >
+            {/* Icon */}
+            <div style={{
+              width: '52px', height: '52px', borderRadius: '50%',
+              backgroundColor: '#F0F4FF',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px auto',
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2E6BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </div>
+
+            {/* Title */}
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0B1F3A', marginBottom: '8px' }}>
+              Sign out of Nexus?
+            </h2>
+
+            {/* Subtitle */}
+            <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: 1.6, marginBottom: '28px' }}>
+              You'll need to sign in again to access your account.
+            </p>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                style={{
+                  flex: 1, padding: '11px', borderRadius: '8px',
+                  border: '1px solid #E5E7EB', background: '#FFFFFF',
+                  fontSize: '14px', fontWeight: 500, color: '#374151',
+                  cursor: 'pointer', transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  flex: 1, padding: '11px', borderRadius: '8px',
+                  border: 'none', background: '#0B1F3A',
+                  fontSize: '14px', fontWeight: 600, color: '#FFFFFF',
+                  cursor: 'pointer', transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+      `}</style>
     </div>
   );
 }
