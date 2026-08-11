@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { withCache, invalidateCache } from '@/lib/cache';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const cacheKey = `report:${params.id}`;
