@@ -135,6 +135,9 @@ export const apiService = createApi({
       query: (id) => ({ url: `/reports/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Reports'],
     }),
+    getDashboardData: builder.query<any, void>({
+      query: () => '/dashboard',
+    }),
     getMe: builder.query<any, void>({
       query: () => '/users/me',
       providesTags: ['Profile'],
@@ -213,5 +216,6 @@ export const {
   useRegisterMutation,
   useLogoutMutation,
   useForgotPasswordMutation,
-  useResetPasswordMutation
+  useResetPasswordMutation,
+  useGetDashboardDataQuery
 } = apiService;

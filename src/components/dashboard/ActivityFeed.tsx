@@ -2,40 +2,18 @@
 
 import React from 'react';
 
-const activities = [
-  {
-    id: 1,
-    title: 'Case #AML-2023-892 Escalated',
-    description: 'High risk transaction flagged for manual review by Compliance Team A.',
-    time: '10 mins ago',
-    type: 'case',
-    color: '#3B82F6',
-  },
-  {
-    id: 2,
-    title: 'Quarterly Audit Report Generated',
-    description: 'Q3 2023 compliance report is ready for download.',
-    time: '2 hours ago',
-    type: 'report',
-    color: '#10B981',
-  },
-  {
-    id: 3,
-    title: 'System Alert: API Rate Limit',
-    description: 'External screening API approaching daily rate limit.',
-    time: '4 hours ago',
-    type: 'alert',
-    color: '#EF4444',
-  },
-  {
-    id: 4,
-    title: 'New Team Member Added',
-    description: 'Sarah Jenkins joined Compliance Team B.',
-    time: '6 hours ago',
-    type: 'user',
-    color: '#6B7280',
-  },
-];
+export interface ActivityItem {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  type: string;
+  color: string;
+}
+
+interface ActivityFeedProps {
+  activities: ActivityItem[];
+}
 
 function ActivityIcon({ type, color }: { type: string; color: string }) {
   return (
@@ -77,7 +55,7 @@ function ActivityIcon({ type, color }: { type: string; color: string }) {
   );
 }
 
-export default function ActivityFeed() {
+export default function ActivityFeed({ activities = [] }: ActivityFeedProps) {
   return (
     <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E5E7EB', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -85,16 +63,20 @@ export default function ActivityFeed() {
         <button style={{ fontSize: '13px', color: '#3B82F6', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>View All</button>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {activities.map(activity => (
-          <div key={activity.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-            <ActivityIcon type={activity.type} color={activity.color} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#0B1F3A', marginBottom: '2px' }}>{activity.title}</div>
-              <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '2px', lineHeight: 1.4 }}>{activity.description}</div>
-              <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{activity.time}</div>
+        {activities.length === 0 ? (
+          <div style={{ fontSize: '13px', color: '#6B7280', textAlign: 'center', padding: '20px 0' }}>No recent activity.</div>
+        ) : (
+          activities.map(activity => (
+            <div key={activity.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <ActivityIcon type={activity.type} color={activity.color} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0B1F3A', marginBottom: '2px' }}>{activity.title}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '2px', lineHeight: 1.4 }}>{activity.description}</div>
+                <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{new Date(activity.time).toLocaleString()}</div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
