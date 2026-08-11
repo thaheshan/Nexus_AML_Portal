@@ -23,7 +23,7 @@ export default function AuthScreen() {
     try {
       const response = await login({ email, password }).unwrap();
       dispatch(setCredentials({ user: response.user, token: response.token }));
-      router.push('/announcements');
+      router.push('/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
       // In a real app, show a toast or error message here

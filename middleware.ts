@@ -6,12 +6,12 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ['/', '/login', '/register', '/register/role', '/api/auth/login', '/api/auth/register'];
+  const publicRoutes = ['/', '/login', '/register', '/register/role', '/api/auth/login', '/api/auth/register', '/api/auth/logout'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  if (isPublicRoute && token) {
-    // If logged in and trying to access login, redirect to dashboard
-    return NextResponse.redirect(new URL('/announcements', request.url));
+  if (isPublicRoute && token && !pathname.startsWith('/api')) {
+    // If logged in and trying to access a public page, redirect to dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   if (!isPublicRoute && !token && !pathname.startsWith('/_next') && !pathname.startsWith('/favicon.ico')) {
