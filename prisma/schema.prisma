@@ -9,14 +9,15 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      String   @default("VIEWER") // ADMIN, DEVELOPER, CLIENT, VIEWER
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  password      String
+  role          String         @default("VIEWER") // ADMIN, DEVELOPER, CLIENT, VIEWER
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   announcements Announcement[]
+  cases         Case[]         @relation("CaseAssignee")
 }
 
 model Announcement {
@@ -24,10 +25,23 @@ model Announcement {
   title       String
   category    String
   message     String
-  imageUrl    String?  // Optional image attachment URL
+  imageUrl    String?
   authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   author      User     @relation(fields: [authorId], references: [id])
+}
+
+model Case {
+  id          String   @id @default(uuid())
+  caseId      String   @unique // e.g., CASE-1042
+  entityName  String
+  riskLevel   String   // HIGH, MEDIUM, LOW
+  status      String   // OPEN, UNDER_REVIEW, CLOSED
+  assigneeId  String?  // Optional assignee
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignee    User?    @relation("CaseAssignee", fields: [assigneeId], references: [id])
 }

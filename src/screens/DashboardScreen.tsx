@@ -81,7 +81,7 @@ const Icons = {
 // ─── Full Nav Definition ────────────────────────────────────────────────────
 const NAV_ITEMS = [
   { id: 'dashboard',     label: 'Dashboard',      path: '/dashboard',     icon: Icons.Dashboard,     roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
-  { id: 'cases',         label: 'Cases',           path: '/cases',         icon: Icons.Cases,         roles: ['ADMIN', 'DEVELOPER'] },
+  { id: 'cases',         label: 'Cases',           path: '/cases',         icon: Icons.Cases,         roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
   { id: 'announcements', label: 'Announcements',   path: '/announcements', icon: Icons.Announcements, roles: ['ADMIN', 'CLIENT', 'VIEWER'] },
   { id: 'alerts',        label: 'Alerts',          path: '/alerts',        icon: Icons.Alerts,        roles: ['ADMIN'] },
   { id: 'reports',       label: 'Reports',         path: '/reports',       icon: Icons.Reports,       roles: ['ADMIN'] },
