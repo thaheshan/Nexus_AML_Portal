@@ -44,4 +44,18 @@ model Case {
   updatedAt   DateTime @updatedAt
 
   assignee    User?    @relation("CaseAssignee", fields: [assigneeId], references: [id])
+  alerts      Alert[]  @relation("AlertCase")
+}
+
+model Alert {
+  id          String   @id @default(uuid())
+  severity    String   // CRITICAL, HIGH, MEDIUM, LOW
+  type        String   // TRANSACTION, SANCTIONS, THRESHOLD, PEP, DOCUMENT, VELOCITY
+  description String
+  relatedCaseId String? // Optional FK to Case.id
+  status      String   @default("NEW") // NEW, INVESTIGATING, ACKNOWLEDGED, RESOLVED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  relatedCase Case?    @relation("AlertCase", fields: [relatedCaseId], references: [id])
 }
