@@ -1,0 +1,2 @@
+# Nexus_AML_Portal
+Nexus AML Portal is a secure internal web application built with Next.js, designed to help compliance teams manage anti-money-laundering workflows from a single hub. It features authenticated login, a case management system for tracking and reviewing flagged entities, a real-time alerts feed for urgent compliance triggers, and a reports module for generating audit-ready summaries. The portal supports team announcements to keep stakeholders aligned, with a clean, enterprise-grade interface built for clarity, security, and day-to-day operational use.
