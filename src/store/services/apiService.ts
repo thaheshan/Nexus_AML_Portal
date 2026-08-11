@@ -35,15 +35,41 @@ export const apiService = createApi({
         method: 'POST',
       }),
     }),
-    getAnnouncements: builder.query<any[], void>({
-      query: () => '/announcements',
+    getAnnouncements: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, category?: string, search?: string }>({
+      query: (params) => {
+        let url = '/announcements?';
+        if (params?.page) url += `page=${params.page}&`;
+        if (params?.limit) url += `limit=${params.limit}&`;
+        if (params?.category) url += `category=${encodeURIComponent(params.category)}&`;
+        if (params?.search) url += `search=${encodeURIComponent(params.search)}`;
+        return url;
+      },
       providesTags: ['Announcements'],
     }),
-    createAnnouncement: builder.mutation<any, Partial<any>>({
-      query: (body) => ({
+    getAnnouncementById: builder.query<any, string>({
+      query: (id) => `/announcements/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Announcements', id }],
+    }),
+    createAnnouncement: builder.mutation<any, any>({
+      query: (announcement) => ({
         url: '/announcements',
         method: 'POST',
-        body,
+        body: announcement,
+      }),
+      invalidatesTags: ['Announcements'],
+    }),
+    updateAnnouncement: builder.mutation<any, { id: string; data: any }>({
+      query: ({ id, data }) => ({
+        url: `/announcements/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Announcements', id }, 'Announcements'],
+    }),
+    deleteAnnouncement: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/announcements/${id}`,
+        method: 'DELETE',
       }),
       invalidatesTags: ['Announcements'],
     }),
@@ -52,7 +78,10 @@ export const apiService = createApi({
 
 export const { 
   useGetAnnouncementsQuery, 
+  useGetAnnouncementByIdQuery,
   useCreateAnnouncementMutation,
+  useUpdateAnnouncementMutation,
+  useDeleteAnnouncementMutation,
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation
