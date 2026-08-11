@@ -10,6 +10,12 @@ export const apiService = createApi({
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
+      if (typeof document !== 'undefined') {
+        const csrfMatch = document.cookie.match(/(?:^|; )csrf-token=([^;]*)/);
+        if (csrfMatch && csrfMatch[1]) {
+          headers.set('x-csrf-token', decodeURIComponent(csrfMatch[1]));
+        }
+      }
       return headers;
     },
   }),

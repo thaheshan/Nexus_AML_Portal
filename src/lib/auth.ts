@@ -1,7 +1,17 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const secretKey = process.env.JWT_SECRET || 'nexus-super-secret-key-for-dev';
-const key = new TextEncoder().encode(secretKey);
+const getSecretKey = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL: JWT_SECRET environment variable is missing in production!');
+    }
+    return 'nexus-super-secret-key-for-dev-environment-only-change-in-prod';
+  }
+  return secret;
+};
+
+const key = new TextEncoder().encode(getSecretKey());
 
 export async function signToken(payload: any) {
   return await new SignJWT(payload)

@@ -2,10 +2,31 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: Request) {
   try {
+    // 1. Rate Limiting on Login Route to Prevent Brute-Force Attacks
+    const reqHeaders = headers();
+    const clientIp = reqHeaders.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1';
+    
+    // Limit: max 5 login attempts per 60 seconds per IP
+    const rl = await rateLimit(`login:${clientIp}`, 5, 60);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again in a minute.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rl.reset - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': rl.limit.toString(),
+            'X-RateLimit-Remaining': rl.remaining.toString(),
+          },
+        }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -38,13 +59,14 @@ export async function POST(request: Request) {
 
     const token = await signToken(payload);
 
-    // Set secure HTTP-Only cookie
+    // Set secure HTTP-Only cookie (HTTPS enforced in production via secure flag)
     cookies().set({
       name: 'token',
       value: token,
       httpOnly: true,
       path: '/',
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24, // 24 hours
     });
 

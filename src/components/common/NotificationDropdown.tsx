@@ -237,7 +237,7 @@ export default function NotificationDropdown() {
                     {/* Content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: isRead ? 500 : 700, color: '#0B1F3A', truncate: true }}>
+                        <span style={{ fontSize: '13px', fontWeight: isRead ? 500 : 700, color: '#0B1F3A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {item.title}
                         </span>
                         <span style={{ fontSize: '11px', color: '#9CA3AF', flexShrink: 0 }}>
