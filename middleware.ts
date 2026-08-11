@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
   const { pathname } = request.nextUrl;
 
-  const publicRoutes = ['/login', '/api/auth/login', '/api/auth/register'];
+  const publicRoutes = ['/', '/login', '/api/auth/login', '/api/auth/register'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
   if (isPublicRoute && token) {

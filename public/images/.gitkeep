@@ -1,0 +1,2 @@
+# This folder is for static image assets such as logos, icons, and illustrations.
+# Next.js serves these files statically at the root path, e.g. /images/logo.png
