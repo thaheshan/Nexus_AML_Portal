@@ -18,6 +18,7 @@ model User {
   updatedAt     DateTime       @updatedAt
   announcements Announcement[]
   cases         Case[]         @relation("CaseAssignee")
+  reports       Report[]       @relation("ReportAuthor")
 }
 
 model Announcement {
@@ -58,4 +59,18 @@ model Alert {
   updatedAt   DateTime @updatedAt
 
   relatedCase Case?    @relation("AlertCase", fields: [relatedCaseId], references: [id])
+}
+
+model Report {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   // SUMMARY, RISK_ASSESSMENT, AUDIT_LOG
+  dateRangeFrom DateTime
+  dateRangeTo   DateTime
+  generatedById String
+  fileUrl       String?  // Optional download link
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  generatedBy   User     @relation("ReportAuthor", fields: [generatedById], references: [id])
 }
