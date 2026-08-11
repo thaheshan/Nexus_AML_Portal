@@ -1,5 +1,7 @@
 import AnnouncementFormScreen from '@/features/announcements/AnnouncementFormScreen';
 
-export default function AnnouncementEditPage() {
+export const dynamic = 'force-dynamic';
+
+export default function EditAnnouncementPage() {
   return <AnnouncementFormScreen />;
 }

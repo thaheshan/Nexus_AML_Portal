@@ -1,5 +1,7 @@
 import CaseFormScreen from '@/features/cases/CaseFormScreen';
 
-export default function CaseEditPage() {
+export const dynamic = 'force-dynamic';
+
+export default function EditCasePage() {
   return <CaseFormScreen />;
 }
