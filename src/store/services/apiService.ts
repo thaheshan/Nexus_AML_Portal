@@ -13,7 +13,7 @@ export const apiService = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Announcements', 'User'],
+  tagTypes: ['Announcements', 'User', 'Cases'],
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -34,6 +34,42 @@ export const apiService = createApi({
         url: '/auth/logout',
         method: 'POST',
       }),
+    }),
+    getUsers: builder.query<any[], void>({
+      query: () => '/users',
+    }),
+    getCases: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, status?: string, riskLevel?: string, assigneeId?: string, search?: string }>({
+      query: (params) => {
+        let url = '/cases?';
+        if (params?.page) url += `page=${params.page}&`;
+        if (params?.limit) url += `limit=${params.limit}&`;
+        if (params?.status) url += `status=${encodeURIComponent(params.status)}&`;
+        if (params?.riskLevel) url += `riskLevel=${encodeURIComponent(params.riskLevel)}&`;
+        if (params?.assigneeId) url += `assigneeId=${encodeURIComponent(params.assigneeId)}&`;
+        if (params?.search) url += `search=${encodeURIComponent(params.search)}`;
+        return url;
+      },
+      providesTags: ['Cases'],
+    }),
+    getCaseById: builder.query<any, string>({
+      query: (id) => `/cases/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Cases', id }],
+    }),
+    createCase: builder.mutation<any, any>({
+      query: (caseData) => ({
+        url: '/cases',
+        method: 'POST',
+        body: caseData,
+      }),
+      invalidatesTags: ['Cases'],
+    }),
+    updateCase: builder.mutation<any, { id: string; data: any }>({
+      query: ({ id, data }) => ({
+        url: `/cases/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Cases', id }, 'Cases'],
     }),
     getAnnouncements: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, category?: string, search?: string }>({
       query: (params) => {
@@ -77,6 +113,11 @@ export const apiService = createApi({
 });
 
 export const { 
+  useGetUsersQuery,
+  useGetCasesQuery,
+  useGetCaseByIdQuery,
+  useCreateCaseMutation,
+  useUpdateCaseMutation,
   useGetAnnouncementsQuery, 
   useGetAnnouncementByIdQuery,
   useCreateAnnouncementMutation,
