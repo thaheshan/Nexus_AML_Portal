@@ -13,7 +13,7 @@ export const apiService = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts', 'Reports'],
+  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts', 'Reports', 'Profile'],
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -121,6 +121,17 @@ export const apiService = createApi({
       query: (id) => ({ url: `/reports/${id}`, method: 'DELETE' }),
       invalidatesTags: ['Reports'],
     }),
+    getMe: builder.query<any, void>({
+      query: () => '/users/me',
+      providesTags: ['Profile'],
+    }),
+    updateMe: builder.mutation<any, any>({
+      query: (data) => ({ url: '/users/me', method: 'PUT', body: data }),
+      invalidatesTags: ['Profile', 'User'],
+    }),
+    changePassword: builder.mutation<any, any>({
+      query: (data) => ({ url: '/users/me/password', method: 'PUT', body: data }),
+    }),
     getAnnouncements: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, category?: string, search?: string }>({
       query: (params) => {
         let url = '/announcements?';
@@ -176,6 +187,9 @@ export const {
   useGetReportByIdQuery,
   useCreateReportMutation,
   useDeleteReportMutation,
+  useGetMeQuery,
+  useUpdateMeMutation,
+  useChangePasswordMutation,
   useGetAnnouncementsQuery, 
   useGetAnnouncementByIdQuery,
   useCreateAnnouncementMutation,
