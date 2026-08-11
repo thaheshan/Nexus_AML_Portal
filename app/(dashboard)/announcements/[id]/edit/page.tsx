@@ -1,5 +1,5 @@
-import AnnouncementFormScreen from '@/screens/AnnouncementFormScreen';
+import AnnouncementFormScreen from '@/features/announcements/AnnouncementFormScreen';
 
-export default function EditAnnouncementPage() {
+export default function AnnouncementEditPage() {
   return <AnnouncementFormScreen />;
 }

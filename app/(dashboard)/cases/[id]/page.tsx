@@ -1,4 +1,4 @@
-import CaseDetailScreen from '@/screens/CaseDetailScreen';
+import CaseDetailScreen from '@/features/cases/CaseDetailScreen';
 
 export default function CaseDetailPage() {
   return <CaseDetailScreen />;

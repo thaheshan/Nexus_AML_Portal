@@ -2,14 +2,17 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
+import { withCache, invalidateCache } from '@/lib/cache';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    const caseItem = await prisma.case.findUnique({
-      where: { id: params.id },
-      include: {
-        assignee: { select: { id: true, name: true } }
-      }
+    const cacheKey = `case:${params.id}`;
+
+    const caseItem = await withCache(cacheKey, 30, async () => {
+      return prisma.case.findUnique({
+        where: { id: params.id },
+        include: { assignee: { select: { id: true, name: true } } }
+      });
     });
 
     if (!caseItem) {
@@ -41,10 +44,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const updatedCase = await prisma.case.update({
       where: { id: params.id },
       data: { entityName, riskLevel, status, assigneeId: assigneeId || null },
-      include: {
-        assignee: { select: { id: true, name: true } }
-      }
+      include: { assignee: { select: { id: true, name: true } } }
     });
+
+    await invalidateCache([`case:${params.id}`, 'cases:*', 'dashboard:*']);
 
     return NextResponse.json(updatedCase, { status: 200 });
   } catch (error) {
@@ -64,11 +67,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Delete associated alerts first
     await prisma.alert.deleteMany({ where: { relatedCaseId: params.id } });
-
-    // Delete case
     await prisma.case.delete({ where: { id: params.id } });
+
+    await invalidateCache([`case:${params.id}`, 'cases:*', 'dashboard:*']);
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

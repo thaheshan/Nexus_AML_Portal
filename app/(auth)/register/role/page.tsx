@@ -1,5 +1,5 @@
-import RoleSelectionScreen from '@/screens/RoleSelectionScreen';
+import RoleSelectionScreen from '@/features/auth/RoleSelectionScreen';
 
-export default function RolePage() {
+export default function RoleSelectionPage() {
   return <RoleSelectionScreen />;
 }

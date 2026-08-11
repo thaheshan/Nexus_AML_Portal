@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
+import { withCache, invalidateCache } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -12,60 +13,64 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || '';
     const dateRange = searchParams.get('dateRange') || '';
 
-    const skip = (page - 1) * limit;
-    const now = new Date();
+    const cacheKey = `reports:${page}:${limit}:${search}:${type}:${dateRange}`;
 
-    const whereClause: any = {};
+    const responseData = await withCache(cacheKey, 30, async () => {
+      const skip = (page - 1) * limit;
+      const now = new Date();
 
-    if (type && type !== 'All Types') whereClause.type = type;
+      const whereClause: any = {};
 
-    if (dateRange && dateRange !== 'All Time') {
-      let fromDate = new Date();
-      if (dateRange === 'Last 7 Days')   fromDate = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
-      if (dateRange === 'Last 30 Days')  fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      if (dateRange === 'Last 90 Days')  fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-      whereClause.createdAt = { gte: fromDate };
-    }
+      if (type && type !== 'All Types') whereClause.type = type;
 
-    if (search) {
-      whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { type: { contains: search, mode: 'insensitive' } },
-      ];
-    }
+      if (dateRange && dateRange !== 'All Time') {
+        let fromDate = new Date();
+        if (dateRange === 'Last 7 Days')  fromDate = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
+        if (dateRange === 'Last 30 Days') fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        if (dateRange === 'Last 90 Days') fromDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        whereClause.createdAt = { gte: fromDate };
+      }
 
-    // Stats for summary cards
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      if (search) {
+        whereClause.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { type: { contains: search, mode: 'insensitive' } },
+        ];
+      }
 
-    const [reports, totalCount, thisMonthCount, scheduledCount, lastReport] = await Promise.all([
-      prisma.report.findMany({
-        where: whereClause,
-        include: { generatedBy: { select: { id: true, name: true } } },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.report.count({ where: whereClause }),
-      prisma.report.count({ where: { createdAt: { gte: startOfMonth } } }),
-      // Scheduled reports placeholder (can be extended with a Schedule model later)
-      Promise.resolve(3),
-      prisma.report.findFirst({ orderBy: { createdAt: 'desc' } }),
-    ]);
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    return NextResponse.json({
-      data: reports,
-      meta: {
-        total: totalCount,
-        page,
-        limit,
-        totalPages: Math.ceil(totalCount / limit),
-        stats: {
-          thisMonth: thisMonthCount,
-          scheduled: scheduledCount,
-          lastGeneratedAt: lastReport?.createdAt ?? null,
+      const [reports, totalCount, thisMonthCount, scheduledCount, lastReport] = await Promise.all([
+        prisma.report.findMany({
+          where: whereClause,
+          include: { generatedBy: { select: { id: true, name: true } } },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.report.count({ where: whereClause }),
+        prisma.report.count({ where: { createdAt: { gte: startOfMonth } } }),
+        Promise.resolve(3),
+        prisma.report.findFirst({ orderBy: { createdAt: 'desc' } }),
+      ]);
+
+      return {
+        data: reports,
+        meta: {
+          total: totalCount,
+          page,
+          limit,
+          totalPages: Math.ceil(totalCount / limit),
+          stats: {
+            thisMonth: thisMonthCount,
+            scheduled: scheduledCount,
+            lastGeneratedAt: lastReport?.createdAt ?? null,
+          },
         },
-      },
-    }, { status: 200 });
+      };
+    });
+
+    return NextResponse.json(responseData, { status: 200 });
 
   } catch (error) {
     console.error('Failed to fetch reports:', error);
@@ -104,6 +109,8 @@ export async function POST(request: Request) {
       },
       include: { generatedBy: { select: { id: true, name: true } } },
     });
+
+    await invalidateCache(['reports:*', 'dashboard:*']);
 
     return NextResponse.json(report, { status: 201 });
   } catch (error) {
