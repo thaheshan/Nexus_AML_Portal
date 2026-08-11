@@ -15,6 +15,26 @@ export const apiService = createApi({
   }),
   tagTypes: ['Announcements', 'User'],
   endpoints: (builder) => ({
+    login: builder.mutation<any, any>({
+      query: (credentials) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    register: builder.mutation<any, any>({
+      query: (userData) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body: userData,
+      }),
+    }),
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+    }),
     getAnnouncements: builder.query<any[], void>({
       query: () => '/announcements',
       providesTags: ['Announcements'],
@@ -30,4 +50,10 @@ export const apiService = createApi({
   }),
 });
 
-export const { useGetAnnouncementsQuery, useCreateAnnouncementMutation } = apiService;
+export const { 
+  useGetAnnouncementsQuery, 
+  useCreateAnnouncementMutation,
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation
+} = apiService;

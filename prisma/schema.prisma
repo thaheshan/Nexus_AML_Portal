@@ -12,6 +12,7 @@ model User {
   email     String   @unique
   name      String
   password  String
+  role      String   @default("VIEWER") // ADMIN, DEVELOPER, CLIENT, VIEWER
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   announcements Announcement[]
