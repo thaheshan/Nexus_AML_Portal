@@ -13,8 +13,12 @@ model User {
   email         String         @unique
   name          String
   password      String
-  role          String         @default("VIEWER") // ADMIN, DEVELOPER, CLIENT, VIEWER
-  createdAt     DateTime       @default(now())
+  role              String         @default("VIEWER") // ADMIN, DEVELOPER, CLIENT, VIEWER
+  phone             String?
+  avatarUrl         String?
+  notificationPrefs Json?
+  systemPrefs       Json?
+  createdAt         DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   announcements Announcement[]
   cases         Case[]         @relation("CaseAssignee")
