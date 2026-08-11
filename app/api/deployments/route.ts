@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
 import { withCache, invalidateCache } from '@/lib/cache';
 
+export const dynamic = 'force-dynamic';
+
 const DEFAULT_DEPLOYMENTS = [
   { service: 'nexus-api',        env: 'Production',  status: 'LIVE',     version: 'v2.4.1', deployedBy: 'CI/CD Pipeline' },
   { service: 'nexus-frontend',   env: 'Production',  status: 'LIVE',     version: 'v3.1.0', deployedBy: 'CI/CD Pipeline' },
