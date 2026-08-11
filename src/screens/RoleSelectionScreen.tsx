@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import logoImage from '../../public/images/logo_nexus_portal.png';
 
 export default function RoleSelectionScreen() {
   const router = useRouter();
@@ -60,7 +61,15 @@ export default function RoleSelectionScreen() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: 'var(--bg-main)', padding: '40px' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: 'var(--bg-main)', padding: '40px' }}>
+      {/* Top Left Logo */}
+      <div style={{ position: 'absolute', top: '32px', left: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <img src={logoImage.src} alt="Nexus Logo" style={{ width: '28px', height: 'auto' }} />
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--navy)', letterSpacing: '-0.01em', lineHeight: 1.1 }}>Nexus AML</div>
+          <div style={{ fontSize: '10px', color: '#4D6A8A', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Portal</div>
+        </div>
+      </div>
       <div style={{ maxWidth: '1000px', width: '100%' }}>
         <h2 style={{ fontSize: '28px', fontWeight: 600, color: 'var(--navy)', marginBottom: '8px', textAlign: 'center' }}>Choose your role</h2>
         <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '40px', textAlign: 'center' }}>Select how you will be using the Nexus AML Portal</p>

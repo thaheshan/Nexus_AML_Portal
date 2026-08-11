@@ -6,6 +6,7 @@ import { useRegisterMutation } from '@/store/services/apiService';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import logoImage from '../../public/images/logo_nexus_portal.png';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -30,7 +31,15 @@ export default function RegisterScreen() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg-main)' }}>
+    <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg-main)' }}>
+      {/* Top Left Logo */}
+      <div style={{ position: 'absolute', top: '32px', left: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <img src={logoImage.src} alt="Nexus Logo" style={{ width: '28px', height: 'auto' }} />
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--navy)', letterSpacing: '-0.01em', lineHeight: 1.1 }}>Nexus AML</div>
+          <div style={{ fontSize: '10px', color: '#4D6A8A', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Portal</div>
+        </div>
+      </div>
       <div style={{ background: 'var(--bg-card)', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(11,31,58,0.1)', width: '400px' }}>
         <h2 style={{ color: 'var(--navy)', marginBottom: '8px' }}>Create Account</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '14px' }}>

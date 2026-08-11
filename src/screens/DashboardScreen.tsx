@@ -8,6 +8,7 @@ import { RootState } from '@/store/store';
 import { useLogoutMutation, useGetMeQuery } from '@/store/services/apiService';
 import Link from 'next/link';
 import AuthRehydrator from '@/components/AuthRehydrator';
+import logoImage from '../../public/images/logo_nexus_portal.png';
 
 // ─── SVG Nav Icons ─────────────────────────────────────────────────────────
 const Icons = {
@@ -139,9 +140,12 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
       }}>
 
         {/* Logo */}
-        <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.01em' }}>Nexus AML</div>
-          <div style={{ fontSize: '10px', color: '#4D6A8A', marginTop: '2px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Portal</div>
+        <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src={logoImage.src} alt="Nexus Logo" style={{ width: '28px', height: 'auto' }} />
+          <div>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.01em', lineHeight: 1.1 }}>Nexus AML</div>
+            <div style={{ fontSize: '10px', color: '#4D6A8A', marginTop: '2px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Portal</div>
+          </div>
         </div>
 
         {/* Nav */}
