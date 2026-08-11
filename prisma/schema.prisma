@@ -78,3 +78,11 @@ model Report {
 
   generatedBy   User     @relation("ReportAuthor", fields: [generatedById], references: [id])
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
