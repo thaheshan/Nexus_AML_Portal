@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
+import { withCache, invalidateCache } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -14,49 +15,54 @@ export async function GET(request: Request) {
     const status = searchParams.get('status') || '';
     const unresolvedOnly = searchParams.get('unresolvedOnly') === 'true';
 
-    const skip = (page - 1) * limit;
+    const cacheKey = `alerts:${page}:${limit}:${search}:${severity}:${type}:${status}:${unresolvedOnly}`;
 
-    const whereClause: any = {};
+    const responseData = await withCache(cacheKey, 15, async () => {
+      const skip = (page - 1) * limit;
 
-    if (severity && severity !== 'All Severities') whereClause.severity = severity;
-    if (type && type !== 'All Types') whereClause.type = type;
-    if (status && status !== 'All Statuses') whereClause.status = status;
-    if (unresolvedOnly) whereClause.status = { not: 'RESOLVED' };
-    if (search) {
-      whereClause.OR = [
-        { description: { contains: search, mode: 'insensitive' } },
-        { type: { contains: search, mode: 'insensitive' } },
-      ];
-    }
+      const whereClause: any = {};
 
-    const [alerts, totalCount, unresolvedCount] = await Promise.all([
-      prisma.alert.findMany({
-        where: whereClause,
-        include: {
-          relatedCase: { select: { id: true, caseId: true } },
+      if (severity && severity !== 'All Severities') whereClause.severity = severity;
+      if (type && type !== 'All Types') whereClause.type = type;
+      if (status && status !== 'All Statuses') whereClause.status = status;
+      if (unresolvedOnly) whereClause.status = { not: 'RESOLVED' };
+      if (search) {
+        whereClause.OR = [
+          { description: { contains: search, mode: 'insensitive' } },
+          { type: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      const [alerts, totalCount, unresolvedCount] = await Promise.all([
+        prisma.alert.findMany({
+          where: whereClause,
+          include: {
+            relatedCase: { select: { id: true, caseId: true } },
+          },
+          orderBy: [
+            { severity: 'asc' },
+            { createdAt: 'desc' },
+          ],
+          skip,
+          take: limit,
+        }),
+        prisma.alert.count({ where: whereClause }),
+        prisma.alert.count({ where: { status: { not: 'RESOLVED' } } }),
+      ]);
+
+      return {
+        data: alerts,
+        meta: {
+          total: totalCount,
+          page,
+          limit,
+          totalPages: Math.ceil(totalCount / limit),
+          unresolvedCount,
         },
-        orderBy: [
-          // CRITICAL first, then by date
-          { severity: 'asc' },
-          { createdAt: 'desc' },
-        ],
-        skip,
-        take: limit,
-      }),
-      prisma.alert.count({ where: whereClause }),
-      prisma.alert.count({ where: { status: { not: 'RESOLVED' } } }),
-    ]);
+      };
+    });
 
-    return NextResponse.json({
-      data: alerts,
-      meta: {
-        total: totalCount,
-        page,
-        limit,
-        totalPages: Math.ceil(totalCount / limit),
-        unresolvedCount,
-      },
-    }, { status: 200 });
+    return NextResponse.json(responseData, { status: 200 });
 
   } catch (error) {
     console.error('Failed to fetch alerts:', error);
@@ -94,6 +100,8 @@ export async function POST(request: Request) {
         relatedCase: { select: { id: true, caseId: true } },
       },
     });
+
+    await invalidateCache(['alerts:*', 'dashboard:*', 'notifications:*']);
 
     return NextResponse.json(alert, { status: 201 });
   } catch (error) {

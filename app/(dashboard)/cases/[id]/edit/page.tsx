@@ -1,5 +1,5 @@
-import CaseFormScreen from '@/screens/CaseFormScreen';
+import CaseFormScreen from '@/features/cases/CaseFormScreen';
 
-export default function EditCasePage() {
+export default function CaseEditPage() {
   return <CaseFormScreen />;
 }

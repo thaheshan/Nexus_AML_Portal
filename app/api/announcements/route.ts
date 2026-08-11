@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth';
+import { withCache, invalidateCache } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -11,39 +12,44 @@ export async function GET(request: Request) {
     const category = searchParams.get('category') || 'All Categories';
     const search = searchParams.get('search') || '';
 
-    const skip = (page - 1) * limit;
+    const cacheKey = `announcements:${page}:${limit}:${category}:${search}`;
 
-    // Build the where clause
-    const whereClause: any = {};
-    if (category !== 'All Categories') {
-      whereClause.category = category;
-    }
-    if (search) {
-      whereClause.title = { contains: search, mode: 'insensitive' };
-    }
+    const responseData = await withCache(cacheKey, 60, async () => {
+      const skip = (page - 1) * limit;
 
-    const [announcements, totalCount] = await Promise.all([
-      prisma.announcement.findMany({
-        where: whereClause,
-        include: {
-          author: { select: { name: true, role: true } }
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.announcement.count({ where: whereClause })
-    ]);
-
-    return NextResponse.json({
-      data: announcements,
-      meta: {
-        total: totalCount,
-        page,
-        limit,
-        totalPages: Math.ceil(totalCount / limit)
+      const whereClause: any = {};
+      if (category !== 'All Categories') {
+        whereClause.category = category;
       }
-    }, { status: 200 });
+      if (search) {
+        whereClause.title = { contains: search, mode: 'insensitive' };
+      }
+
+      const [announcements, totalCount] = await Promise.all([
+        prisma.announcement.findMany({
+          where: whereClause,
+          include: {
+            author: { select: { name: true, role: true } }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.announcement.count({ where: whereClause })
+      ]);
+
+      return {
+        data: announcements,
+        meta: {
+          total: totalCount,
+          page,
+          limit,
+          totalPages: Math.ceil(totalCount / limit)
+        }
+      };
+    });
+
+    return NextResponse.json(responseData, { status: 200 });
 
   } catch (error) {
     console.error('Failed to fetch announcements:', error);
@@ -53,7 +59,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    // Auth check - Only ADMIN can create (Simplified for demo, usually use middleware/decorators)
     const token = cookies().get('token')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
@@ -81,6 +86,8 @@ export async function POST(request: Request) {
         author: { select: { name: true, role: true } }
       }
     });
+
+    await invalidateCache(['announcements:*', 'dashboard:*', 'notifications:*']);
 
     return NextResponse.json(newAnnouncement, { status: 201 });
   } catch (error) {
