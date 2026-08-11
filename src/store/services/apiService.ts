@@ -13,7 +13,7 @@ export const apiService = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts'],
+  tagTypes: ['Announcements', 'User', 'Cases', 'Alerts', 'Reports'],
   endpoints: (builder) => ({
     login: builder.mutation<any, any>({
       query: (credentials) => ({
@@ -97,6 +97,30 @@ export const apiService = createApi({
       query: ({ id, data }) => ({ url: `/alerts/${id}`, method: 'PATCH', body: data }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Alerts', id }, 'Alerts'],
     }),
+    getReports: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, type?: string, dateRange?: string, search?: string }>({
+      query: (params) => {
+        let url = '/reports?';
+        if (params?.page)      url += `page=${params.page}&`;
+        if (params?.limit)     url += `limit=${params.limit}&`;
+        if (params?.type)      url += `type=${encodeURIComponent(params.type)}&`;
+        if (params?.dateRange) url += `dateRange=${encodeURIComponent(params.dateRange)}&`;
+        if (params?.search)    url += `search=${encodeURIComponent(params.search)}`;
+        return url;
+      },
+      providesTags: ['Reports'],
+    }),
+    getReportById: builder.query<any, string>({
+      query: (id) => `/reports/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Reports', id }],
+    }),
+    createReport: builder.mutation<any, any>({
+      query: (data) => ({ url: '/reports', method: 'POST', body: data }),
+      invalidatesTags: ['Reports'],
+    }),
+    deleteReport: builder.mutation<any, string>({
+      query: (id) => ({ url: `/reports/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Reports'],
+    }),
     getAnnouncements: builder.query<{ data: any[], meta: any }, { page?: number, limit?: number, category?: string, search?: string }>({
       query: (params) => {
         let url = '/announcements?';
@@ -148,6 +172,10 @@ export const {
   useGetAlertByIdQuery,
   useCreateAlertMutation,
   useUpdateAlertStatusMutation,
+  useGetReportsQuery,
+  useGetReportByIdQuery,
+  useCreateReportMutation,
+  useDeleteReportMutation,
   useGetAnnouncementsQuery, 
   useGetAnnouncementByIdQuery,
   useCreateAnnouncementMutation,
