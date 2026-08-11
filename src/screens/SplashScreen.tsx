@@ -11,7 +11,7 @@ export default function SplashScreen() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const duration = 2500;
+    const duration = 1000;
     const intervalTime = 50;
     const steps = duration / intervalTime;
     let currentStep = 0;

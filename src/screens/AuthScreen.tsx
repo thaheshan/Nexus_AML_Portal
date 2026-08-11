@@ -107,7 +107,7 @@ export default function AuthScreen() {
                 <input type="checkbox" style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--navy)' }} />
                 Remember me
               </label>
-              <a href="#" style={{ color: 'var(--blue)', textDecoration: 'none', fontWeight: 500 }}>Forgot password?</a>
+              <a href="/forgot-password" style={{ color: 'var(--blue)', textDecoration: 'none', fontWeight: 500 }}>Forgot password?</a>
             </div>
 
             <Button type="submit" fullWidth disabled={isLoading}>
