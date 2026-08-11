@@ -9,6 +9,8 @@ import { useLogoutMutation, useGetMeQuery } from '@/store/services/apiService';
 import Link from 'next/link';
 import AuthRehydrator from '@/components/AuthRehydrator';
 import logoImage from '../../public/images/logo_nexus_portal.png';
+import GlobalSearch from '@/components/common/GlobalSearch';
+import NotificationDropdown from '@/components/common/NotificationDropdown';
 
 // ─── SVG Nav Icons ─────────────────────────────────────────────────────────
 const Icons = {
@@ -84,13 +86,13 @@ const Icons = {
 const NAV_ITEMS = [
   { id: 'dashboard',     label: 'Dashboard',      path: '/dashboard',     icon: Icons.Dashboard,     roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
   { id: 'cases',         label: 'Cases',           path: '/cases',         icon: Icons.Cases,         roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
-  { id: 'announcements', label: 'Announcements',   path: '/announcements', icon: Icons.Announcements, roles: ['ADMIN', 'CLIENT', 'VIEWER'] },
+  { id: 'announcements', label: 'Announcements',   path: '/announcements', icon: Icons.Announcements, roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
   { id: 'alerts',        label: 'Alerts',          path: '/alerts',        icon: Icons.Alerts,        roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
   { id: 'reports',       label: 'Reports',         path: '/reports',       icon: Icons.Reports,       roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
 
   { id: 'deployments',   label: 'Deploy Status',   path: '/deployments',   icon: Icons.Deploy,        roles: ['DEVELOPER'] },
   { id: 'milestones',    label: 'Milestones',      path: '/milestones',    icon: Icons.Milestones,    roles: ['CLIENT'] },
-  { id: 'settings',      label: 'Settings',        path: '/settings',      icon: Icons.Settings,      roles: ['ADMIN'] },
+  { id: 'settings',      label: 'Settings',        path: '/settings',      icon: Icons.Settings,      roles: ['ADMIN', 'DEVELOPER', 'CLIENT', 'VIEWER'] },
 ];
 
 function getInitials(name: string) {
@@ -227,21 +229,11 @@ export default function DashboardScreen({ children }: { children: React.ReactNod
           zIndex: 50,
         }}>
           {/* Search */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#F5F7FA', borderRadius: '8px', padding: '8px 14px', width: '280px', border: '1px solid #E5E7EB' }}>
-            <Icons.Search />
-            <input
-              type="text"
-              placeholder="Search cases, announcements..."
-              style={{ border: 'none', background: 'none', outline: 'none', fontSize: '13px', color: '#374151', width: '100%' }}
-            />
-          </div>
+          <GlobalSearch />
 
           {/* Right side */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', position: 'relative', padding: '6px' }}>
-              <Icons.Bell />
-              <span style={{ position: 'absolute', top: '4px', right: '4px', width: '8px', height: '8px', backgroundColor: '#EF4444', borderRadius: '50%', border: '2px solid #FFFFFF' }}/>
-            </button>
+            <NotificationDropdown />
             <div style={{ width: '34px', height: '34px', borderRadius: '50%', backgroundColor: '#1E3A5F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#FFFFFF', cursor: 'pointer', overflow: 'hidden', flexShrink: 0 }}>
               {profile?.avatarUrl ? (
                 <img src={profile.avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

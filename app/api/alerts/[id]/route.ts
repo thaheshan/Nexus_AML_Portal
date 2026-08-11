@@ -47,3 +47,22 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const token = cookies().get('token')?.value;
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const decoded = await verifyToken(token);
+    const role = (decoded as any)?.role;
+    if (!decoded || (role !== 'ADMIN' && role !== 'DEVELOPER')) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    await prisma.alert.delete({ where: { id: params.id } });
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error) {
+    console.error('Failed to delete alert:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
