@@ -4,6 +4,8 @@ import { verifyToken } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { withCache } from '@/lib/cache';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const token = cookies().get('token')?.value;
@@ -115,38 +117,58 @@ export async function GET(request: Request) {
         time: new Date(a.time).toISOString()
       }));
 
+      // Calculate 30-day window chart data with 6 discrete interval points
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       thirtyDaysAgo.setHours(0,0,0,0);
 
+      // Fetch all cases created or updated in the last 30 days
       const recentCases = await prisma.case.findMany({
-        where: { createdAt: { gte: thirtyDaysAgo } },
+        where: {
+          OR: [
+            { createdAt: { gte: thirtyDaysAgo } },
+            { updatedAt: { gte: thirtyDaysAgo } }
+          ]
+        },
         select: { createdAt: true, status: true, updatedAt: true }
       });
 
-      const newCasesData = Array(12).fill(0);
-      const resolvedData = Array(12).fill(0);
-      const bucketMs = (30 * 24 * 60 * 60 * 1000) / 12;
+      const NUM_POINTS = 6;
+      const bucketMs = (Date.now() - thirtyDaysAgo.getTime()) / (NUM_POINTS - 1);
+
+      const newCasesData = Array(NUM_POINTS).fill(0);
+      const resolvedData = Array(NUM_POINTS).fill(0);
+      const xLabels: string[] = [];
+
+      // Generate 6 evenly spaced date labels over the 30-day period
+      for (let i = 0; i < NUM_POINTS; i++) {
+        const d = new Date(thirtyDaysAgo.getTime() + i * bucketMs);
+        xLabels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
 
       recentCases.forEach(c => {
-        const createdBucket = Math.floor((new Date(c.createdAt).getTime() - thirtyDaysAgo.getTime()) / bucketMs);
-        if (createdBucket >= 0 && createdBucket < 12) {
-          newCasesData[createdBucket]++;
+        // New cases bucket matching
+        const createdTime = new Date(c.createdAt).getTime();
+        if (createdTime >= thirtyDaysAgo.getTime()) {
+          const idx = Math.min(
+            NUM_POINTS - 1,
+            Math.max(0, Math.round((createdTime - thirtyDaysAgo.getTime()) / bucketMs))
+          );
+          newCasesData[idx]++;
         }
-        
-        if (c.status === 'CLOSED' && new Date(c.updatedAt) >= thirtyDaysAgo) {
-          const resolvedBucket = Math.floor((new Date(c.updatedAt).getTime() - thirtyDaysAgo.getTime()) / bucketMs);
-          if (resolvedBucket >= 0 && resolvedBucket < 12) {
-            resolvedData[resolvedBucket]++;
+
+        // Resolved cases bucket matching
+        if (c.status === 'CLOSED') {
+          const updatedTime = new Date(c.updatedAt).getTime();
+          if (updatedTime >= thirtyDaysAgo.getTime()) {
+            const idx = Math.min(
+              NUM_POINTS - 1,
+              Math.max(0, Math.round((updatedTime - thirtyDaysAgo.getTime()) / bucketMs))
+            );
+            resolvedData[idx]++;
           }
         }
       });
-
-      const xLabels = [];
-      for (let i = 0; i < 6; i++) {
-        const d = new Date(thirtyDaysAgo.getTime() + (i * 2 * bucketMs));
-        xLabels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-      }
 
       return {
         stats,
