@@ -142,12 +142,23 @@ I overhauled the dashboard **Case Volume (30 Days)** SVG graph to fetch and comp
 
 ---
 
-## 🔐 User Roles & Permissions
+## 🔐 User Account Creation & Role Permissions
 
-- **ADMIN**: Full management access across all modules (Cases, Alerts, Reports, Announcements, Users).
-- **DEVELOPER**: Technical operational access including Deployment Status tracking.
-- **CLIENT**: Project milestone tracking and overview visibility.
-- **VIEWER**: Read-only compliance portal access.
+The portal uses a secure, role-based access control (RBAC) system. 
+
+### 1. Account Registration Flow
+1. **Sign Up:** Any new user can click "Create Account" on the login screen.
+2. **Default Role:** Upon successful registration, the new user is automatically assigned the **`VIEWER`** role by default. This ensures secure, read-only access to the platform without exposing sensitive operations.
+3. **Role Elevation (Admin Action):** To gain higher privileges (like `ADMIN` or `DEVELOPER`), an existing `ADMIN` must log in, navigate to the **Settings -> Team Management** section, and manually update the new user's role.
+
+### 2. Role Definitions & Access Levels
+
+| Role | Access Level | Description & Capabilities |
+|---|---|---|
+| **`ADMIN`** | **Full Access** | Has complete management access across all modules. Can create/edit/delete Cases, resolve Alerts, generate Reports, post Announcements, and manage all User Roles within the tenant. |
+| **`DEVELOPER`** | **Technical Access** | Primarily focused on the technical lifecycle. Has access to the **Deployments** tracker, system logs, and technical milestones. Cannot modify compliance cases or manage users. |
+| **`CLIENT`** | **Restricted Overview** | Designed for external stakeholders. Can view Project **Milestones**, track high-level progress, and read public announcements. Cannot access internal AML cases or alerts. |
+| **`VIEWER`** | **Read-Only (Default)** | The default state for all new registrations. Can view dashboards, cases, and alerts, but **cannot modify, delete, or create** any records. |
 
 ---
 
